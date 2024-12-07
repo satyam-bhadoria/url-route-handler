@@ -1,5 +1,5 @@
-import { RouteLayer } from "./route-layer.js";
-import { UrlOptions } from "./types/url.type.js";
+import { RouteLayer } from "./route-layer";
+import { UrlOptions } from "./types/url.type";
 
 function isPromise(obj: any) {
   return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
@@ -32,10 +32,16 @@ export class Router {
         }, ...args);
         if (isPromise(result)) {
           return result.then((res: any) => {
-            return res;
+            return {
+              status: 'success',
+              data: res,
+            };
           }).catch(layer.handleError);
         }
-        return result;
+        return {
+          status: 'success',
+          data: result,
+        };
       }
     }
     return {
