@@ -50,3 +50,38 @@ describe('testing wild card routes', () => {
     expect(val.ext).toBe('jpg');
   });
 });
+
+describe('testing router failure case', () => {
+  const router = new Router();
+  router.use('/foo', () => {
+    throw new Error('error thrown');
+  });
+  router.use('/fooasync', async () => {
+    throw new Error('error thrown');
+  });
+  test('should return not found error', () => {
+    const result = router.handle('/foo/1/2');
+    expect(result.status).toBe('error');
+    expect(result.message).toBe('No route found');
+  });
+  test('should return thrown error', () => {
+    const result = router.handle('/fooasync');
+    return result.then((res: any) => {
+      expect(res.status).toBe('error');
+      expect(res.message).toBe('error thrown');
+    })
+  });
+  test('should return thrown error from nested route', () => {
+    const router1 = new Router();
+    router1.use('/foo/:nestedpage', (req) => {
+      const res = router.handle(req.params.nestedpage);
+      if (res.status === 'error') {
+        throw new Error(res.message);
+      }
+      return res.data;
+    });
+    const result = router1.handle('/foo/foo');
+    expect(result.status).toBe('error');
+    expect(result.message).toBe('error thrown');
+  });
+});

@@ -70,11 +70,29 @@ export class RouteLayer {
 
   handleRequest (urlObj: UrlOptions, ...args: any) {
     try {
-      return this.handle(urlObj, ...args);
+      const result = this.handle(urlObj, ...args);
+      if (isPromise(result)) {
+        return result.then((res: any) => {
+          return {
+            status: 'success',
+            data: res,
+          };
+        }).catch((err: any) => {
+          return this.handleError(err);
+        });
+      }
+      return {
+        status: 'success',
+        data: result,
+      };
     } catch (err: any) {
       return this.handleError(err);
     }
   }
+}
+
+function isPromise(obj: any) {
+  return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
 }
 
 function decodeParam (val: any) {

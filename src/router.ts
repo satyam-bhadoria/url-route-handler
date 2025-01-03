@@ -1,10 +1,6 @@
 import { RouteLayer } from "./route-layer";
 import { UrlOptions } from "./types/url.type";
 
-function isPromise(obj: any) {
-  return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
-}
-
 export class Router {
   layers: RouteLayer[] = [];
 
@@ -20,7 +16,7 @@ export class Router {
         urlObj.searchParams?.forEach((value, key) => {
           queryParam[key] = value;
         });
-        const result = layer.handleRequest({
+        return layer.handleRequest({
           url: urlObj.href,
           host: urlObj.host,
           origin: urlObj.origin,
@@ -30,18 +26,6 @@ export class Router {
           params: { ...layer.params },
           hash: urlObj.hash?.slice(1),
         }, ...args);
-        if (isPromise(result)) {
-          return result.then((res: any) => {
-            return {
-              status: 'success',
-              data: res,
-            };
-          }).catch(layer.handleError);
-        }
-        return {
-          status: 'success',
-          data: result,
-        };
       }
     }
     return {
